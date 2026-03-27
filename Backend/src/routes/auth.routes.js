@@ -1,0 +1,12 @@
+const express = require("express");
+const router = express.Router();
+const { register, login, verifyEmail, ResendVerificationMail ,getMe ,logout} = require("../controller/auth.controller");
+const { registerValidator, loginValidator } = require("../validators/auth.validator");
+const {verifyToken} = require("../middleware/auth.middleware");
+router.post("/register", registerValidator, register);
+router.post("/login", loginValidator, login);
+router.get("/verify/:token", verifyEmail);
+router.post("/resend-verification", ResendVerificationMail);
+router.get("/me", verifyToken, getMe);
+router.post("/logout", logout);   
+module.exports = router;
