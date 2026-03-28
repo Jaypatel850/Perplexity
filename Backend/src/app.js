@@ -2,6 +2,7 @@ const express = require('express');
 const connectDB = require('./db/database');
 const cookieparser = require("cookie-parser");
 const authRoutes = require("./routes/auth.routes");
+const chatRoutes = require("./routes/chat.routes");
 const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
@@ -15,5 +16,5 @@ app.use(cors({
 connectDB();
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/chat", chatRoutes);
 module.exports = app;

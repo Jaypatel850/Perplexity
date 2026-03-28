@@ -10,7 +10,12 @@ const Dashboard = () => {
   },[]);
   console.log("Dashboard user:", user);
   return (
-    <div>Dashboard</div>
+    <div className="Main-section">
+    <section>
+      
+    </section>
+    </div>
+
   )
 }
 

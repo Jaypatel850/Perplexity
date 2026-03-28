@@ -11,10 +11,9 @@ const messageSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    role: {
+    AIcontent:{
         type: String,
-        enum: ['user', 'ai'],
-        required: true
+        required: false,
     }
 });
 
