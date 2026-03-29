@@ -4,7 +4,7 @@ const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
 const { ChatMistralAI } = require("@langchain/mistralai");
 
 const geminimodel = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-flash-lite",
+  model: "gemini-2.5-flash",
   apiKey: process.env.GOOGLE_API_KEY,
 });
 const mistralmodel = new ChatMistralAI({

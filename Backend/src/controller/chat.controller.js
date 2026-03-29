@@ -5,26 +5,34 @@ const messageModel = require("../models/message.model");
 async function chat(req, res) {
   const { message, chat: chatFromBody, chatId } = req.body;
   try {
-    const activeChatId = chatId || chatFromBody; // support both field names
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const activeChatId = chatId || chatFromBody;
     let chat;
     if (activeChatId) {
-      // Find existing chat that belongs to the user
-      chat = await chatmodel.findOne({ _id: activeChatId, user: req.user.id });
-      if (!chat) {
-        return res.status(404).json({ error: "Chat not found" });
+      chat = await chatmodel.findOne({ _id: activeChatId, user: userId });
+      if (!chat) return res.status(404).json({ error: "Chat not found" });
+    } else {
+      let title;
+      try {
+        title = await generateTitle(message);
+      } catch {
+        title = message.slice(0, 40) || "New chat";
       }
-    }
-    else {
-      // Create a new chat session
-      const title = await generateTitle(message);
-      chat = new chatmodel({
-        user: req.user.id,
-        title: title,
-      });
+      chat = new chatmodel({ user: userId, title: String(title) });
       await chat.save();
     }
-    const messagesHistory = await messageModel.find({ chat: chat._id });
-    const aiResponse = await generateResponse(message);
+    let aiResponse;
+    try {
+      aiResponse = await generateResponse(message);
+    } catch (responseError) {
+      console.error("Error generating chat response:", responseError);
+      aiResponse = "I’m having trouble generating a reply right now. Please try again in a moment.";
+    }
+    aiResponse = String(aiResponse);
 
     // Save user message and AI response as separate documents
     try {
@@ -47,9 +55,9 @@ async function chat(req, res) {
       console.error("Failed to save chat message:", saveErr);
     }
 
-    res.json({ response: aiResponse, title: chat.title, chatId: chat._id });
+    res.json({ response: aiResponse, title: chat.title, chatId: chat._id, fallback: true });
   } catch (error) {
-    console.error("Error generating chat response:", error);
+    console.error("Error processing chat request:", error);
     res.status(500).json({ error: "Failed to generate response" });
   }
 }
@@ -78,4 +86,20 @@ async function getMessages(req, res) {
   }
 }
 
-module.exports = { chat, getMessages,getChat };
+async function deleteChat(req, res) {
+  const { chatId } = req.params;
+  const userId = req.user?.id;
+  try {
+    const chat = await chatmodel.findOne({ _id: chatId, user: userId });
+    if (!chat) return res.status(404).json({ error: "Chat not found" });
+    // Delete all messages first, then the chat
+    await messageModel.deleteMany({ chat: chatId });
+    await chatmodel.findByIdAndDelete(chatId);
+    res.json({ success: true, chatId });
+  } catch (error) {
+    console.error("Error deleting chat:", error);
+    res.status(500).json({ error: "Failed to delete chat" });
+  }
+}
+
+module.exports = { chat, getMessages, getChat, deleteChat };

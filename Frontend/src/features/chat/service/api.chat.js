@@ -1,24 +1,28 @@
 import Axios from "axios";
 
-const API_URL = Axios.create({
+const API = Axios.create({
   baseURL: "http://localhost:3000/api/chat",
-  withCredentials: true
+  withCredentials: true,
 });
 
-export async function sendMessage(message, chatId = null) {
-  const payload = chatId ? { message, chatId } : { message };
-  const res = await API_URL.post("/", payload);
+export const sendMessage = async (message, chatId = null) => {
+  const res = await API.post("/", chatId ? { message, chatId } : { message });
   return res.data;
-}
+};
 
-export async function fetchChats(userId) {
-  const res = await API_URL.get(`/user/${userId}`);
+export const fetchChats = async (userId) => {
+  const res = await API.get(`/user/${userId}`);
   return res.data;
-}
+};
 
-export async function fetchMessages(chatId) {
-  const res = await API_URL.get(`/${chatId}`);
+export const fetchMessages = async (chatId) => {
+  const res = await API.get(`/${chatId}`);
   return res.data;
-}
+};
 
-export default API_URL;
+export const deleteChat = async (chatId) => {
+  const res = await API.delete(`/${chatId}`);
+  return res.data;
+};
+
+export default API;
