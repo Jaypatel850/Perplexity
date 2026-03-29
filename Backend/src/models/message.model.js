@@ -14,7 +14,12 @@ const messageSchema = new mongoose.Schema({
     AIcontent:{
         type: String,
         required: false,
+    },
+    role:{
+        type: String,
+        enum: ['user', 'assistant'],
+        required: true
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Message', messageSchema);

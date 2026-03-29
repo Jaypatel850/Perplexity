@@ -26,14 +26,23 @@ async function chat(req, res) {
     const messagesHistory = await messageModel.find({ chat: chat._id });
     const aiResponse = await generateResponse(message);
 
-    // Store one document per turn: user message in `content`, AI reply in `AIcontent`
+    // Save user message and AI response as separate documents
     try {
-      const chatMessage = new messageModel({
+      // Save user message
+      const userMessage = new messageModel({
         chat: chat._id,
         content: message,
-        AIcontent: aiResponse,
+        role: 'user'
       });
-      await chatMessage.save();
+      await userMessage.save();
+
+      // Save AI response
+      const assistantMessage = new messageModel({
+        chat: chat._id,
+        content: aiResponse,
+        role: 'assistant'
+      });
+      await assistantMessage.save();
     } catch (saveErr) {
       console.error("Failed to save chat message:", saveErr);
     }
